@@ -75,7 +75,9 @@ function displayPosts(posts) {
         return;
     }
 
-    posts.forEach(post => {
+    for (let i = 0; i < posts.length; i++) {
+        const post = posts[i];
+
         const box = document.createElement("div");
         box.className = "result-box";
 
@@ -91,14 +93,14 @@ function displayPosts(posts) {
 
         box.append(title, description, author);
 
-        box.onclick = () => {
+        box.onclick = function () {
             location.href =
                 "pages/post.html?heading=" +
                 encodeURIComponent(post[0]);
         };
 
         container.appendChild(box);
-    });
+    }
 }
 
 async function search() {
@@ -147,7 +149,7 @@ function setupHome() {
 
     if (!form) return;
 
-    form.onsubmit = event => {
+    form.onsubmit = function (event) {
         event.preventDefault();
         search();
     };
@@ -170,7 +172,16 @@ async function setupPost() {
     }
 
     try {
-        const post = (await getPosts()).find(post => post[0] === heading);
+        const posts = await getPosts();
+
+        let post = null;
+
+        for (let i = 0; i < posts.length; i++) {
+            if (posts[i][0] === heading) {
+                post = posts[i];
+                break;
+            }
+        }
 
         if (!post) {
             container.textContent = "Post not found.";
@@ -196,7 +207,7 @@ async function setupPost() {
         const deleteButton = document.getElementById("delete-button");
 
         if (editButton) {
-            editButton.onclick = () => {
+            editButton.onclick = function () {
                 location.href =
                     "create.html?edit=" +
                     encodeURIComponent(post[0]);
@@ -204,7 +215,7 @@ async function setupPost() {
         }
 
         if (deleteButton) {
-            deleteButton.onclick = async () => {
+            deleteButton.onclick = async function () {
                 if (!confirm("Delete this post?")) return;
 
                 if (!await login()) return;
@@ -243,7 +254,16 @@ async function setupCreate() {
         document.getElementById("submit-button").textContent = "Save";
 
         try {
-            const post = (await getPosts()).find(post => post[0] === edit);
+            const posts = await getPosts();
+
+            let post = null;
+
+            for (let i = 0; i < posts.length; i++) {
+                if (posts[i][0] === edit) {
+                    post = posts[i];
+                    break;
+                }
+            }
 
             if (!post) {
                 alert("Post not found.");
@@ -258,7 +278,7 @@ async function setupCreate() {
         }
     }
 
-    form.onsubmit = async event => {
+    form.onsubmit = async function (event) {
         event.preventDefault();
 
         const title = document.getElementById("title").value.trim();
@@ -282,7 +302,8 @@ async function setupCreate() {
                 await api("/update", {
                     method: "POST",
                     body: JSON.stringify({
-                        ...user,
+                        username: user.username,
+                        password: user.password,
                         heading: edit,
                         new_heading: title,
                         new_description: description
@@ -292,7 +313,8 @@ async function setupCreate() {
                 await api("/upload", {
                     method: "POST",
                     body: JSON.stringify({
-                        ...user,
+                        username: user.username,
+                        password: user.password,
                         heading: title,
                         description: description
                     })
