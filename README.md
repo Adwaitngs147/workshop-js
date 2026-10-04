@@ -1,1 +1,1 @@
-# workshop-js
+# OSDC Workshop - Day 3: JavaScript
